@@ -1,7 +1,8 @@
 <template>
   <div class="container">
     <oxd-tree-select-input
-      :select-parents-on-child-selection="true"
+      :select-parents-on-child-selection="false"
+      :count-topmost-parents="false"
       :options="options"
       :disabled="false"
       :readonly="false"

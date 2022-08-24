@@ -8,7 +8,7 @@
       :disabled="disabled"
       :readonly="readonly"
       :value="
-        getPlaceholderValue() + (selectedIdsComputed.length > 1 ? ',' : '')
+        getPlaceholderValue() + (selectedIdsLengthComputed > 1 ? ',' : '')
       "
       :placeholder="placeholder"
       :dropdownOpened="dropdownOpen"
@@ -21,16 +21,16 @@
       @keydown="onKeypress"
     >
       <template #afterInput>
-        <div v-if="selectedIdsComputed.length > 1" class="selected-count-chip">
+        <div v-if="selectedIdsLengthComputed > 1" class="selected-count-chip">
           <oxd-chip
-            v-if="String(selectedIdsComputed.length - 1).length == 1"
+            v-if="String(selectedIdsLengthComputed - 1).length == 1"
             :label="
-              '&nbsp;' + '+' + (selectedIdsComputed.length - 1) + '&nbsp;'
+              '&nbsp;' + '+' + (selectedIdsLengthComputed - 1) + '&nbsp;'
             "
           ></oxd-chip>
           <oxd-chip
-            v-if="String(selectedIdsComputed.length - 1).length > 1"
-            :label="'+' + (selectedIdsComputed.length - 1)"
+            v-if="String(selectedIdsLengthComputed - 1).length > 1"
+            :label="'+' + (selectedIdsLengthComputed - 1)"
           ></oxd-chip>
         </div>
       </template>
@@ -233,6 +233,10 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    countTopmostParents: {
+      type: Boolean,
+      default: true,
+    },
     dropdownPosition: {
       type: String,
       default: BOTTOM,
@@ -289,6 +293,21 @@ export default defineComponent({
         k => selectedIdsObject.value[k],
       );
       return selectedIds;
+    });
+
+    const selectedIdsLengthComputed = computed(() => {
+      if (props.countTopmostParents) {
+        return selectedIdsComputed.value.length;
+      } else {
+        let selectedLevelOneOptionsCount = 0;
+        let levelOneOptions = getLevelOneOptions();
+        for (let option of levelOneOptions) {
+          if (selectedIdsObject.value[option.id]) {
+            selectedLevelOneOptionsCount++;
+          }
+        }
+        return selectedIdsComputed.value.length - selectedLevelOneOptionsCount;
+      }
     });
 
     const addChildrenToSelectedIdsArray = (option: Option) => {
@@ -728,6 +747,7 @@ export default defineComponent({
       dropdownClasses,
       isAllSelected,
       expandedIdsObject,
+      selectedIdsLengthComputed,
       selectOptionsOnCheckbox,
       expandIconClicked,
       getIcon,
