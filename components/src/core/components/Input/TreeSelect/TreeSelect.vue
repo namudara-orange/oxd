@@ -24,9 +24,7 @@
         <div v-if="selectedIdsLengthComputed > 1" class="selected-count-chip">
           <oxd-chip
             v-if="String(selectedIdsLengthComputed - 1).length == 1"
-            :label="
-              '&nbsp;' + '+' + (selectedIdsLengthComputed - 1) + '&nbsp;'
-            "
+            :label="'&nbsp;' + '+' + (selectedIdsLengthComputed - 1) + '&nbsp;'"
           ></oxd-chip>
           <oxd-chip
             v-if="String(selectedIdsLengthComputed - 1).length > 1"
@@ -62,7 +60,14 @@
                   "
                 ></oxd-checkbox-input>
               </div>
-              <div class="all-text">{{ $vt('All') }}</div>
+              <div
+                @click="
+                  isAllSelected ? ToggleSelectAll(false) : ToggleSelectAll(true)
+                "
+                class="all-text"
+              >
+                {{ $vt('All') }}
+              </div>
             </div>
             <oxd-divider></oxd-divider>
           </div>
@@ -91,25 +96,34 @@
                 </td>
                 <td
                   :style="
-                    'display: flex ; width: fit-content; margin-left:5%; padding-left:' +
+                    'display: flex ; width: 90%; margin-left:5%; padding-left:' +
                       (option._level * 20 - 20) +
                       'px'
                   "
                 >
-                  <span class="icon-td">
+                  <span
+                    :class="
+                      getIcon(option) === ''
+                        ? 'icon-td-without-icon'
+                        : 'icon-td'
+                    "
+                    @click="
+                      getIcon(option) === '' ? '' : expandIconClicked(option)
+                    "
+                  >
                     <oxd-icon
                       v-if="getIcon(option) === '' ? false : true"
                       :name="getIcon(option)"
                       :tabindex="tabIndex()"
                       :size="'xxx-small'"
                       :withContainer="false"
-                      @keydown.enter="expandIconClicked(option)"
-                      @click="expandIconClicked(option)"
                       @keyup.esc.prevent="onCloseDropdown"
+                      @keydown.enter="expandIconClicked(option)"
                     ></oxd-icon
                   ></span>
                   <span
                     @click="selectOptionOnlabelClick(option)"
+                    :style="getOptionLabelStyle(option)"
                     :class="
                       getIcon(option) == ''
                         ? 'option-label-without-icon'
@@ -309,6 +323,16 @@ export default defineComponent({
         return selectedIdsComputed.value.length - selectedLevelOneOptionsCount;
       }
     });
+
+    const getOptionLabelStyle = (option: Option) => {
+      if (selectedIdsObject.value[option.id]) {
+        if (option.children ? option.children.length != 0 : false) {
+          return 'color:#38455D; font-weight:600;';
+        } else {
+          return 'color:#64728c; font-weight:600;';
+        }
+      } else return '';
+    };
 
     const addChildrenToSelectedIdsArray = (option: Option) => {
       if (!selectedIdsObject.value[option.id]) {
@@ -748,6 +772,7 @@ export default defineComponent({
       isAllSelected,
       expandedIdsObject,
       selectedIdsLengthComputed,
+      getOptionLabelStyle,
       selectOptionsOnCheckbox,
       expandIconClicked,
       getIcon,
